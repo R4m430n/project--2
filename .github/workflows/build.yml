@@ -1,0 +1,70 @@
+name: Build APK with Buildozer
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+      # 1. GitHub repo kodini yuklab olish
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Python versiyasini o‘rnatish
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      # 3. Zaruriy tizim kutubxonalarini o‘rnatish
+      - name: Install system dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            build-essential \
+            git \
+            python3-pip \
+            python3-setuptools \
+            python3-wheel \
+            unzip \
+            openjdk-17-jdk \
+            zlib1g-dev \
+            libncurses5-dev \
+            libtinfo5 \
+            libffi-dev \
+            libssl-dev \
+            libsqlite3-dev \
+            libjpeg-dev \
+            libpng-dev \
+            libfreetype6-dev
+
+      # 4. Buildozer va python-for-android ni o‘rnatish
+      - name: Install Buildozer
+        run: |
+          pip install --upgrade pip
+          pip install Cython==0.29.36
+          pip install buildozer==1.5.0
+          pip install python-for-android==2024.1.1
+
+      # 5. Kivy va boshqa kutubxonalarni o‘rnatish
+      - name: Install Python dependencies
+        run: |
+          pip install kivy==2.3.0
+          pip install kivymd==1.1.1
+
+      # 6. APK build qilish
+      - name: Build APK
+        run: |
+          buildozer android debug
+
+      # 7. APK faylni GitHub Actions natijasi sifatida saqlash
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: my_app_apk
+          path: bin/*.apk
